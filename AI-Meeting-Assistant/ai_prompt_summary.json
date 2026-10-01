@@ -1,0 +1,57 @@
+{
+  "document_type": "prompt_timeline",
+  "project_name": "AI Meeting Assistant",
+  "timeline": [
+    {
+      "step": 1,
+      "time": "2026-09-30 09:30",
+      "title": "Prompt v1: initial meeting-analysis prompt",
+      "status": "Failed",
+      "what_happened": "AI returned generic action items such as 'Review meeting action plan' even when those tasks were not in the transcript.",
+      "how_we_knew": "Manual transcript testing showed the output included filler tasks and mixed owners across multiple people.",
+      "why_it_failed": "The prompt asked for a summary but did not clearly force ownership mapping or reject generic tasks.",
+      "fix": "The prompt was rewritten to require real participant names, split multi-owner tasks, and block generic filler tasks unless explicitly stated in the transcript."
+    },
+    {
+      "step": 2,
+      "time": "2026-09-30 10:40",
+      "title": "Prompt v2: improved but still weak",
+      "status": "Partially failed",
+      "what_happened": "Action items still sometimes had unclear owners or duplicate tasks for the same person.",
+      "how_we_knew": "Regression checks and UI grouping showed duplicate entries and inconsistent owner mapping.",
+      "why_it_failed": "The prompt improved, but the app still trusted AI output without post-processing validation.",
+      "fix": "Added a normalization layer to remove duplicates, filter generic items, and keep only valid owner-task pairs before rendering."
+    },
+    {
+      "step": 3,
+      "time": "2026-09-30 11:25",
+      "title": "Fallback summary path",
+      "status": "Failed in visibility",
+      "what_happened": "The app returned a summary that looked successful, but users could not tell whether it came from real AI or fallback logic.",
+      "how_we_knew": "Runtime checks showed missing API keys or failed requests, yet the UI still displayed a normal-looking summary without a source label.",
+      "why_it_failed": "Fallback output had the same shape as AI output, so the user could not tell the difference.",
+      "fix": "Added source labels such as 'Cohere AI', 'OpenRouter AI', and 'Fallback Summary' and warning messages when no API key is available."
+    },
+    {
+      "step": 4,
+      "time": "2026-09-30 12:10",
+      "title": "OpenRouter route",
+      "status": "Secondary only",
+      "what_happened": "It produced a summary, but the output quality and structure were less reliable than Cohere.",
+      "how_we_knew": "The result was usable, but provider consistency was weaker for structured meeting extraction.",
+      "why_it_failed": "Free/open provider variance is higher than the preferred provider route.",
+      "fix": "Kept it as a backup route only and prioritized the more stable Cohere path."
+    },
+    {
+      "step": 5,
+      "time": "2026-09-30 13:00",
+      "title": "Final prompt: ownership-aware and stable",
+      "status": "Fixed",
+      "what_happened": "Outputs matched the transcript better and action items grouped correctly by person.",
+      "how_we_knew": "Final transcript checks confirmed that each action item belonged to a valid participant and generic tasks were removed.",
+      "why_it_worked": "The fix combined tighter prompt rules with post-processing validation, not just prompt wording alone.",
+      "fix": "Combined stricter prompt constraints with owner-based normalization and display grouping before the result is shown to the user."
+    }
+  ],
+  "summary": "The real issue was not only the wording of the prompt, but also the lack of strict validation after AI response generation. The stable fix was: constrain the prompt, force real owners, remove generic tasks, and clearly indicate when the system is using fallback output."
+}
